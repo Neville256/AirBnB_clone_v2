@@ -68,3 +68,4 @@ class FileStorage:
                     objcts.append[obj_id]
             for obj_id in objcts:
                 del FileStorage.__objects[obj_id]
+                FileStorage.save()
