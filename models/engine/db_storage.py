@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """This module defines a class to manage database storage for hbnb clone"""
 import os
-import model
+import models
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
@@ -9,7 +9,7 @@ from models.base_model import BaseModel, Base
 from models.state import State
 from models.city import City
 from models.user import User
-from models.place import Place, place_amenity
+from models.place import Place
 from models.amenity import Amenity
 from models.review import Review
 
@@ -22,17 +22,17 @@ class DBStorage:
         """Initializes the SQL database storage"""
         user = os.getenv('HBNB_MYSQL_USER')
         pword = os.getenv('HBNB_MYSQL_PWD')
-        host = os.getenv('HBNB_MYSQL_HOST')
+        localhost = os.getenv('HBNB_MYSQL_HOST')
         db_name = os.getenv('HBNB_MYSQL_DB')
         env = os.getenv('HBNB_ENV')
-        DATABASE_URL = "mysql+mysqldb://{}:{}@{}:3306/{}".format(
-            user, pword, host, db_name
+        DATABASE_URL = "mysql+mysqldb://{}:{}@localhost/{}".format(
+            user, pword, db_name
         )
         self.__engine = create_engine(
             DATABASE_URL,
             pool_pre_ping=True
         )
-        if env == 'test':
+        if os.getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
@@ -63,13 +63,14 @@ class DBStorage:
     def new(self, obj):
         """Adds new object to storage database"""
         if obj is not None:
-            try:
-                self.__session.add(obj)
-                self.__session.flush()
-                self.__session.refresh(obj)
-            except Exception as ex:
+            if self.__session is None:
+                self.__session = sessionmaker(bind=self.__engine)()
+            self.__session.add(obj)
+            self.__session.commit()
+            if self.__session is not None:
                 self.__session.rollback()
-                raise ex
+            raise ex
+
 
     def save(self):
         """Commits the session changes to database"""
@@ -82,7 +83,11 @@ class DBStorage:
             bind=self.__engine,
             expire_on_commit=False
         )
+        print("SESSION CREATED")
         self.__session = scoped_session(SessionFactory)()
+
+        self.__session = SessionFactory()
+#        print("table created")
 
     def close(self):
         """Closes the storage engine."""

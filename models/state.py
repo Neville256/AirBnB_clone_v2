@@ -10,7 +10,6 @@ class State(BaseModel, Base):
     """ State class """
     __tablename__ = 'states'
 
-    id = Column(Integer, primary_key=True, nullable=False)  # Define the primary key column
     name = Column(String(128), nullable=False)
 
     # Unconditional relationship definition

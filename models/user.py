@@ -10,7 +10,6 @@ class User(BaseModel, Base):
     __tablename__ = 'users'
 
     # Specify id as the primary key column
-    id = Column(String(60), primary_key=True, nullable=False)
     email = Column(String(128), nullable=False)
     password = Column(String(128), nullable=False)
     first_name = Column(String(128))

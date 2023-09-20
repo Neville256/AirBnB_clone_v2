@@ -11,9 +11,6 @@ class Amenity(BaseModel, Base):
     """Represents an amenity data set."""
     __tablename__ = 'amenities'
 
-    # Define 'id' as the primary key column
-    id = Column(Integer, primary_key=True, nullable=False, unique=True)
-
     name = Column(String(128), nullable=False)
 
     if os.getenv('HBNB_TYPE_STORAGE') == 'db':
