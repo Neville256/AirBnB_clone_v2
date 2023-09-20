@@ -2,13 +2,16 @@
 """ Place Module for HBNB project """
 from models.base_model import BaseModel, Base
 from models.amenity import Amenity
+import os  # Import the 'os' module to access environment variables
 import models
 from models.review import Review
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, Float, String, ForeignKey, Table
 
+# Check the value of the environment variable 'HBNB_TYPE_STORAGE'
+storage_type = os.getenv('HBNB_TYPE_STORAGE')
 
-if models.is_type == "db":
+if storage_type == "db":
     relationship_table = Table('place_amenity', Base.metadata,
                                Column('place_id', String(60),
                                       ForeignKey('places.id'),
@@ -17,10 +20,10 @@ if models.is_type == "db":
                                       ForeignKey('amenities.id'),
                                       nullable=False))
 
-
 class Place(BaseModel, Base):
     """ A place to stay """
     __tablename__ = 'places'
+    id = Column(Integer, primary_key=True)
     city_id = Column(String(60), ForeignKey('cities.id'), nullable=False)
     user_id = Column(String(60), ForeignKey('users.id'), nullable=False)
     name = Column(String(128), nullable=False)
@@ -31,12 +34,12 @@ class Place(BaseModel, Base):
     price_by_night = Column(Integer, default=0, nullable=False)
     latitude = Column(Float)
     longitude = Column(Float)
-    reviews = relationship('Review', backref='place', cascade='delete')
-    amenities = relationship('Amenity', secondary=relationship_table,
-                             viewonly=False)
-    amenity_ids = []
-
-    if models.is_type != 'db':
+    
+    if storage_type == "db":
+        reviews = relationship('Review', backref='place', cascade='delete')
+        amenities = relationship('Amenity', secondary=relationship_table,
+                                 viewonly=False)
+    else:
         @property
         def reviews(self):
             """ Place reviews """
