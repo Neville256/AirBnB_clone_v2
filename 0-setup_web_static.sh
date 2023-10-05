@@ -9,19 +9,18 @@ mkdir -p /data/web_static/shared/
 echo "Holberton School" > /data/web_static/releases/test/index.html
 ln -sf /data/web_static/releases/test/ /data/web_static/current
 
-chown -R ubuntu /data/
-chgrp -R ubuntu /data/
+chown -R ubuntu:nginx /data/
+chmod -R 755 /data/web_static/
 
 printf %s "server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    add_header X-Served-By $HOSTNAME;
-    root   /var/www/html;
-    index  index.html index.htm;
+    add_header X-Served-By '$HOSTNAME';
+    root /data/web_static/current;
+    index index.html index.htm;
 
     location /hbnb_static {
         alias /data/web_static/current;
-        index index.html index.htm;
     }
 
     location /redirect_me {
@@ -30,9 +29,13 @@ printf %s "server {
 
     error_page 404 /404.html;
     location /404 {
-      root /var/www/html;
-      internal;
+        root /data/web_static/current;
+        internal;
     }
-}" > /etc/nginx/sites-available/default
+}" > /etc/nginx/sites-available/my_config
 
+# Create a symbolic link to enable the configuration
+ln -s /etc/nginx/sites-available/my_config /etc/nginx/sites-enabled/
+
+# Restart Nginx to apply the configuration
 service nginx restart
