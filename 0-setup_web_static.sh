@@ -2,40 +2,14 @@
 # Sets up a web server for deployment of web_static.
 
 sudo apt-get update
-sudo apt-get install -y nginx
+sudo apt-get -y install nginx
 
-sudo mkdir -p /data/web_static/releases/test/
 sudo mkdir -p /data/web_static/shared/
-sudo echo "Holberton School" > /data/web_static/releases/test/index.html
-sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
+sudo mkdir -p /data/web_static/releases/test/ && sudo touch /data/web_static/releases/test/index.html
+sudo echo "Holberton School" | sudo tee /data/web_static/releases/test/index.html
 
-sudo chown -R ubuntu:nginx /data/
-sudo chmod -R 755 /data/web_static/
-
-printf %s "server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    add_header X-Served-By '$HOSTNAME';
-    root /data/web_static/current;
-    index index.html index.htm;
-
-    location /hbnb_static {
-        alias /data/web_static/current;
-    }
-
-    location /redirect_me {
-        return 301 http://cuberule.com/;
-    }
-
-    error_page 404 /404.html;
-    location /404 {
-        root /data/web_static/current;
-        internal;
-    }
-}" > /etc/nginx/sites-available/my_config
-
-# Create a symbolic link to enable the configuration
-sudo ln -s /etc/nginx/sites-available/my_config /etc/nginx/sites-enabled/
-
-# Restart Nginx to apply the configuration
-service nginx restart
+sudo rm -rf /data/web_static/current #remove if exists
+sudo ln -s /data/web_static/releases/test/ /data/web_static/current #ln -s <target> <current>
+sudo chown -R ubuntu: ubuntu /data/
+sudo sed -i '61i \\tlocation \/hbnb_static/ {\n\t\t alias /data/web_static/current/;\n\t}' /etc/nginx/sites-available/default
+sudo service nginx restart
