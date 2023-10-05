@@ -1,38 +1,54 @@
-# Configures a web server for deployment of web_static.
-
-# Nginx configuration file
-$nginx_conf = "server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    add_header X-Served-By ${hostname};
-    root   /var/www/html;
-    index  index.html index.htm;
-
-    location /hbnb_static {
-        alias /data/web_static/current;
-        index index.html index.htm;
-    }
-
-    location /redirect_me {
-        return 301 http://cuberule.com/;
-    }
-
-    error_page 404 /404.html;
-    location /404 {
-      root /var/www/html;
-      internal;
-    }
-}"
-
+ Install Nginx
 package { 'nginx':
-  ensure   => 'present',
-  provider => 'apt'
-} ->
+  ensure => 'installed',
+}
 
-file { '/data':
-  ensure  => 'directory'
-} ->
+# Create directories
+file { '/data/web_static/shared':
+  ensure => 'directory',
+  owner  => 'ubuntu',
+  group  => 'ubuntu',
+}
 
-file { '/data/web_static':
-  ensure => 'directory'
-} -
+file { '/data/web_static/releases/test':
+  ensure => 'directory',
+  owner  => 'ubuntu',
+  group  => 'ubuntu',
+}
+
+# Create index.html file
+file { '/data/web_static/releases/test/index.html':
+  ensure  => 'file',
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  content => 'Holberton School',
+}
+
+# Remove the existing symbolic link if it exists
+file { '/data/web_static/current':
+  ensure => 'absent',
+}
+
+# Create a symbolic link
+file { '/data/web_static/current':
+  ensure => 'link',
+  target => '/data/web_static/releases/test',
+  owner  => 'ubuntu',
+  group  => 'ubuntu',
+}
+
+# Configure Nginx
+file { '/etc/nginx/sites-available/default':
+  ensure  => 'file',
+  owner   => 'root',
+  group   => 'root',
+  content => template('your_module/nginx_config.erb'), # Use an ERB template for your Nginx config
+  require => Package['nginx'], # Ensure Nginx is installed before applying this config
+}
+
+# Restart Nginx service
+service { 'nginx':
+  ensure    => 'running',
+  enable    => true,
+  require   => File['/etc/nginx/sites-available/default'],
+}
