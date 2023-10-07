@@ -3,7 +3,7 @@
 
 import os
 from datetime import datetime
-from fabric.api import env, local, put, run
+from fabric.api import env, local, put, run, cd  # Add 'cd' import
 
 env.hosts = ["104.196.168.90", "35.196.46.172"]
 
@@ -47,7 +47,7 @@ def do_deploy(archive_path):
     
     name = file_name.replace('.tgz', '')
 
-    with cd(release_dir):
+    with cd(release_dir):  # Use 'cd' here to change the directory context
         run("tar -xzf {} -C {}/{}".format(remote_path, release_dir, name))
         run("rm {}".format(remote_path))
         run("mv {0}/{1}/web_static/* {0}/{1}/".format(release_dir, name))
